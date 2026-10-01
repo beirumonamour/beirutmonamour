@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restaurant Beirut Mon Amour – Rentabilité</title>
+<style>
+  :root{
+        --rouge:#7d7445; --rouge-f:#4f4a2b; --vert:#00843d;
+
+    --fond:#f4f5f7; --carte:#fff; --texte:#1f2937; --gris:#6b7280; --bord:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--fond);color:var(--texte);font-size:15px}
+  header{background:linear-gradient(90deg,var(--rouge),var(--rouge-f));color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+  header h1{margin:0;font-size:1.3rem;letter-spacing:.02em}
+  header .sub{font-size:.85rem;opacity:.92;margin-top:2px}
+  main{max-width:1300px;margin:0 auto;padding:16px}
+  .panel{background:var(--carte);border:1px solid var(--bord);border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .panel h2{margin:0 0 12px;font-size:1.05rem;color:var(--rouge)}
+  details.panel summary{cursor:pointer;font-weight:700;color:var(--rouge)}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  label{display:flex;flex-direction:column;font-size:.8rem;color:var(--gris);gap:4px;font-weight:600}
+  label.inline{flex-direction:row;align-items:center;gap:6px}
+  input,select{font:inherit;padding:9px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:var(--texte);width:100%}
+  label.inline input{width:auto}
+    input:focus,select:focus{outline:2px solid rgba(125,116,69,.25);border-color:var(--rouge)}
+
+  .btn{font:inherit;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600;background:#e5e7eb;color:var(--texte);white-space:nowrap}
+  .btn:hover{filter:brightness(.95)}
+  .btn-primary{background:var(--rouge);color:#fff}
+  .btn-vert{background:var(--vert);color:#fff}
+  .btn-danger{background:#fff;color:#b91c1c;border:1px solid #fca5a5}
+  .btn-sm{padding:4px 9px;font-size:.8rem}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .actions .spacer{flex:1}
+  .preview{font-size:.88rem;color:var(--gris);margin-top:10px;min-height:1.2em}
+  .note{font-size:.78rem;color:#7c2d12;margin-top:10px;background:#fff7ed;border-left:3px solid #f59e0b;padding:6px 10px;border-radius:4px}
+  .muted{color:var(--gris);font-size:.85em}
+  .pill{display:inline-block;padding:5px 12px;border-radius:999px;font-size:.8rem;font-weight:600;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35)}
+  .st-ok{background:#16a34a;border-color:#16a34a}
+  .st-err{background:#f59e0b;border-color:#f59e0b}
+  .st-sync{background:#2563eb;border-color:#2563eb}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px}
+  .card{border-radius:10px;padding:12px;color:#fff}
+  .card .lbl{font-size:.72rem;opacity:.95;text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+  .card .val{font-size:1.25rem;font-weight:700;margin-top:4px}
+  .card .hint{font-size:.72rem;opacity:.88;margin-top:2px}
+  .c-bleu{background:#1d4ed8}.c-indigo{background:#4338ca}.c-orange{background:#c2410c}
+  .c-violet{background:#7e22ce}.c-gris{background:#475569}.c-teal{background:#0f766e}
+  .c-ambre{background:#b45309}.c-cyan{background:#0e7490}.c-rose{background:#be185d}
+  .ok{background:#15803d}.warn{background:#d97706}.bad{background:#b91c1c}
+
+  .detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+  .detail-block{border:1px solid var(--bord);border-radius:8px;overflow:hidden}
+  .detail-block h3{margin:0;padding:7px 10px;font-size:.9rem;color:#fff}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th,td{padding:6px 8px;border-bottom:1px solid var(--bord);text-align:left;vertical-align:top}
+  th{background:#f9fafb;font-size:.72rem;text-transform:uppercase;color:var(--gris)}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  tr.total td{font-weight:700;background:#f9fafb}
+  .table-wrap{overflow-x:auto}
+  #histTable{min-width:820px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:600;color:#fff;white-space:nowrap}
+  .b-vente{background:#1d4ed8}.b-achat{background:#c2410c}.b-perso{background:#7e22ce}.b-charge{background:#475569}.b-autre{background:#0f766e}
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:8px;font-size:.9rem;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
+  #toast.show{opacity:1}
+  .print-only{display:none}
+
+  @media (max-width:600px){
+    main{padding:10px}
+    .panel{padding:12px}
+    .card .val{font-size:1.1rem}
+    header h1{font-size:1.1rem}
+  }
+
+  /* ===== IMPRESSION / PDF : A4 paysage compact ===== */
+  @page{size:A4 landscape;margin:7mm}
+  @media print{
+    body{background:#fff;font-size:8.5pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .no-print,.p-hide{display:none!important}
+    .print-only{display:inline!important}
+    header{padding:5px 10px;border-radius:4px}
+    header h1{font-size:12pt}
+    header .sub{font-size:8pt}
+    main{padding:0;max-width:none}
+    .panel{border:0;box-shadow:none;padding:3px 0;margin:0 0 5px}
+    .panel h2{font-size:9.5pt;margin:0 0 3px}
+    .cards{grid-template-columns:repeat(7,1fr);gap:4px;break-inside:avoid}
+    .card{padding:4px 6px;border-radius:5px}
+    .card .lbl{font-size:6.3pt}
+    .card .val{font-size:9.5pt;margin-top:1px}
+    .card .hint{font-size:6pt;margin-top:0}
+    .detail-grid{grid-template-columns:repeat(5,1fr);gap:5px}
+    .detail-block{break-inside:avoid;border-radius:4px}
+    .detail-block h3{font-size:8pt;padding:2px 5px}
+    table{font-size:6.8pt}
+    th,td{padding:1.5px 3px}
+    th{font-size:6pt}
+    #historyPanel{display:none}
+    body.print-history #historyPanel{display:block;break-before:page}
+    #histTable{min-width:0}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Restaurant Beirut Mon Amour</h1>
+    <div class="sub">Suivi de rentabilité · <strong id="periodLbl"></strong> <span class="print-only" id="printDate"></span></div>
+  </div>
+  <span id="syncStatus" class="pill no-print">Stockage local</span>
+</header>
+
+<main>
+
+  <!-- SAISIE -->
+  <section class="panel no-print">
+    <h2>Ajouter une ligne</h2>
+    <form id="form" autocomplete="off">
+      <div class="form-grid">
+        <label>Date<input type="date" id="fDate" required></label>
+        <label>Type<select id="fType"></select></label>
+        <label>Poste<select id="fPoste"></select></label>
+        <label>Description<input type="text" id="fDesc" placeholder="Ex : Metro, facture n°…"></label>
+        <label>Montant TTC (€)<input type="text" id="fMontant" inputmode="decimal" placeholder="0,00" required></label>
+        <label>Taux TVA
+          <select id="fTva">
+            <option value="0">0 %</option>
+            <option value="5.5">5,5 %</option>
+            <option value="10">10 %</option>
+            <option value="20">20 %</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button type="submit" class="btn btn-primary">+ Ajouter la ligne</button>
+        <div class="preview" id="preview"></div>
+      </div>
+      <div class="note">
+        Ventes : saisissez votre CA <strong>soit par produit</strong> (nourriture, alcool, livraison, Uber Eats, Deliveroo),
+        <strong>soit par mode d'encaissement</strong> (Espèces, CB, Ticket restaurant), mais pas les deux, sinon le CA sera compté deux fois.
+        La TVA se remplit automatiquement selon le poste, et vous pouvez la modifier.
+      </div>
+    </form>
+  </section>
+
+  <!-- BARRE D'OUTILS -->
+  <section class="panel no-print">
+    <div class="actions">
+      <label style="max-width:190px">Mois<input type="month" id="fMois"></label>
+      <button class="btn" id="btnMoisCourant" type="button" style="align-self:flex-end">Mois en cours</button>
+      <button class="btn" id="btnTous" type="button" style="align-self:flex-end">Tous les mois</button>
+      <span class="spacer"></span>
+      <button class="btn btn-vert" id="btnCSV" type="button" style="align-self:flex-end">Export CSV</button>
+      <button class="btn btn-primary" id="btnPDF" type="button" style="align-self:flex-end">Export PDF</button>
+      <label class="inline" style="align-self:flex-end"><input type="checkbox" id="printHist"> Historique dans le PDF</label>
+      <button class="btn btn-danger" id="btnClear" type="button" style="align-self:flex-end">Tout supprimer</button>
+    </div>
+  </section>
+
+  <!-- RÉSUMÉ -->
+  <section class="panel">
+    <h2>Résumé du mois</h2>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <!-- DÉTAIL -->
+  <section class="panel">
+    <h2>Détail par poste</h2>
+    <div class="detail-grid" id="detail"></div>
+  </section>
+
+  <!-- HISTORIQUE -->
+  <section class="panel" id="historyPanel">
+    <h2>Historique des lignes <span class="muted" id="histCount"></span></h2>
+    <div class="table-wrap">
+      <table id="histTable">
+        <thead><tr>
+          <th>Date</th><th>Type</th><th>Poste</th><th>Description</th>
+          <th class="num">TTC</th><th class="num">TVA %</th><th class="num">HT</th><th class="num">TVA</th>
+          <th class="no-print"></th>
+        </tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- GOOGLE SHEETS -->
+  <details class="panel no-print" id="syncPanel">
+    <summary>Synchronisation Google Sheets (PC ↔ mobile)</summary>
+    <div class="form-grid" style="margin-top:12px">
+      <label style="grid-column:1/-1">URL de l'application Web Apps Script
+        <input type="url" id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      </label>
+      <label>Code secret (TOKEN)<input type="password" id="cfgToken" placeholder="Le même que dans le script"></label>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn btn-primary" id="btnConnect" type="button">Enregistrer et connecter</button>
+      <button class="btn" id="btnSync" type="button">Synchroniser maintenant</button>
+      <button class="btn" id="btnPush" type="button">Envoyer tout (remplace la feuille)</button>
+      <button class="btn btn-danger" id="btnDisconnect" type="button">Déconnecter</button>
+    </div>
+    <div class="preview" id="syncMsg"></div>
+  </details>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ================== PARAMÈTRES ================== */
+const POSTES = {
+  "Vente": ["Vente nourriture 10%","Vente alcool 20%","Vente livraison 10%","Vente Uber Eats 10%","Vente Deliveroo 10%","Espèces","CB","Ticket restaurant","Autre vente"],
+  "Achat marchandise": ["Primeur","Viande","Poisson","Boissons","Alcool","Épicerie","Pain","Desserts","Glaces","Emballages","Hygiène","Entretien","Autre marchandise"],
+  "Personnel": ["Salaire cuisine","Salaire salle","Extra","Apprenti","Gérant","Charges sociales","URSSAF","Autre personnel"],
+  "Charge": ["Loyer","Électricité","Gaz","Eau","Assurance","Comptable","Téléphone / Internet","Frais bancaires","TPE","Logiciel caisse","Publicité","Réparation / maintenance","Matériel","Crédit / leasing","Taxes","Nettoyage","Divers"],
+  "Autre": ["Autre entrée","Autre sortie","Remboursement","Avoir fournisseur","Correction"]
+};
+// TVA par défaut ("_" = valeur par défaut du type). Modifiable à la saisie.
+const TVA_DEFAUT = {
+  "Vente": {"Vente alcool 20%":20, _:10},
+  "Achat marchandise": {"Alcool":20,"Emballages":20,"Hygiène":20,"Entretien":20, _:5.5},
+  "Personnel": {_:0},
+  "Charge": {"Assurance":0,"Frais bancaires":0,"Taxes":0,"Eau":5.5, _:20},
+  "Autre": {_:0}
+};
+const TYPES = Object.keys(POSTES);
+const BADGE = {"Vente":"b-vente","Achat marchandise":"b-achat","Personnel":"b-perso","Charge":"b-charge","Autre":"b-autre"};
+const LS_ROWS="bma_v2_rows", LS_QUEUE="bma_v2_queue", LS_CFG="bma_v2_cfg";
+
+/* ================== OUTILS ================== */
+const $ = s => document.querySelector(s);
+function load(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v ?? d; }catch(e){ return d; } }
+function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+const eur = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR"});
+const fmt = n => eur.format(n || 0);
+const pct = x => isFinite(x) ? (x*100).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1})+" %" : "—";
+const tvaLbl = t => String(t).replace(".",",")+" %";
+function parseMontant(s){ return parseFloat(String(s).replace(/\s/g,"").replace("€","").replace(",",".")); }
+function split(ttc,t){ const ht = ttc/(1+t/100); return {ht, tva: ttc-ht}; }
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function todayStr(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+function frDate(s){ const [y,m,d]=String(s).split("-"); return `${d}/${m}/${y}`; }
+function monthLabel(m){ if(!m) return "Tous les mois"; const [y,mo]=m.split("-"); const l=new Date(y,mo-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}); return l.charAt(0).toUpperCase()+l.slice(1); }
+function tvaDefaut(type,poste){ const m=TVA_DEFAUT[type]||{}; return (poste in m) ? m[poste] : (m._ ?? 0); }
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1800); }
+function normalize(r){ return {id:String(r.id), date:String(r.date).slice(0,10), type:String(r.type), poste:String(r.poste), description:String(r.description ?? ""), ttc:Number(r.ttc)||0, tva:Number(r.tva)||0, createdAt:Number(r.createdAt)||0}; }
+
+/* ================== DONNÉES ================== */
+let rows  = load(LS_ROWS, []).map(normalize);
+let queue = load(LS_QUEUE, []);
+let cfg   = load(LS_CFG, {url:"", token:""});
+
+/* ================== FORMULAIRE ================== */
+const fDate=$("#fDate"), fType=$("#fType"), fPoste=$("#fPoste"), fDesc=$("#fDesc"), fMontant=$("#fMontant"), fTva=$("#fTva"), fMois=$("#fMois");
+TYPES.forEach(t => fType.add(new Option(t,t)));
+function fillPostes(){ fPoste.innerHTML=""; POSTES[fType.value].forEach(p=>fPoste.add(new Option(p,p))); setTvaAuto(); }
+function setTvaAuto(){ fTva.value = String(tvaDefaut(fType.value, fPoste.value)); updatePreview(); }
+function updatePreview(){
+  const ttc = parseMontant(fMontant.value);
+  if(!isFinite(ttc)){ $("#preview").textContent=""; return; }
+  const s = split(ttc, parseFloat(fTva.value));
+  $("#preview").innerHTML = `HT : <strong>${fmt(s.ht)}</strong> · TVA : <strong>${fmt(s.tva)}</strong> · TTC : <strong>${fmt(ttc)}</strong>`;
+}
+fType.addEventListener("change", fillPostes);
+fPoste.addEventListener("change", setTvaAuto);
+fTva.addEventListener("change", updatePreview);
+fMontant.addEventListener("input", updatePreview);
+
+$("#form").addEventListener("submit", e => {
+  e.preventDefault();
+  const ttc = parseMontant(fMontant.value);
+  if(!fDate.value){ alert("La date est obligatoire."); return; }
+  if(!isFinite(ttc) || ttc === 0){ alert("Montant TTC invalide."); fMontant.focus(); return; }
+  if(ttc < 0 && fPoste.value !== "Correction" && !confirm("Montant négatif : confirmer ?")) return;
+  const row = { id:uid(), date:fDate.value, type:fType.value, poste:fPoste.value,
+    description:fDesc.value.trim(), ttc:Math.round(ttc*100)/100, tva:parseFloat(fTva.value), createdAt:Date.now() };
+  rows.push(row); save(LS_ROWS, rows);
+  if(fMois.value && !row.date.startsWith(fMois.value)) fMois.value = row.date.slice(0,7);
+  render();
+  enqueue({action:"add", row});
+  fDesc.value=""; fMontant.value=""; updatePreview(); fMontant.focus();
+  toast("Ligne ajoutée");
+});
+
+/* ================== CALCULS ================== */
+function filtered(){ const m=fMois.value; return rows.filter(r => !m || r.date.startsWith(m)); }
+
+function compute(list){
+  const T={caTTC:0,caHT:0,achatsHT:0,personnel:0,chargesHT:0,autresNet:0,tvaCol:0,tvaDed:0,postes:{}};
+  TYPES.forEach(t => T.postes[t]={});
+  for(const r of list){
+    const {ht,tva} = split(r.ttc, r.tva);
+    const P = T.postes[r.type] || (T.postes[r.type]={});
+    const p = P[r.poste] || (P[r.poste]={n:0,ttc:0,ht:0,tva:0});
+    p.n++; p.ttc+=r.ttc; p.ht+=ht; p.tva+=tva;
+    switch(r.type){
+      case "Vente":             T.caTTC+=r.ttc; T.caHT+=ht; T.tvaCol+=tva; break;
+      case "Achat marchandise": T.achatsHT+=ht; T.tvaDed+=tva; break;
+      case "Personnel":         T.personnel+=ht; break;
+      case "Charge":            T.chargesHT+=ht; T.tvaDed+=tva; break;
+      default:
+        if(r.poste==="Avoir fournisseur"){ T.achatsHT-=ht; T.tvaDed-=tva; }   // réduit les achats
+        else if(r.poste==="Autre sortie"){ T.autresNet-=ht; T.tvaDed+=tva; }
+        else { T.autresNet+=ht; }                                              // entrée, remboursement, correction
+    }
+  }
+  T.marge        = T.caHT - T.achatsHT;
+  T.resultat     = T.caHT - T.achatsHT - T.personnel - T.chargesHT;
+  T.resultatFinal= T.resultat + T.autresNet;
+  T.coutMatiere  = T.achatsHT / T.caHT;
+  T.masseSal     = T.personnel / T.caHT;
+  T.primeCost    = (T.achatsHT + T.personnel) / T.caHT;
+  T.tvaPay       = T.tvaCol - T.tvaDed;
+  return T;
+}
+
+/* ================== AFFICHAGE ================== */
+function ratioClass(x, ok, warn){ if(!isFinite(x)) return "c-gris"; return x<=ok ? "ok" : x<=warn ? "warn" : "bad"; }
+
+function render(){
+  const list = filtered(), T = compute(list);
+  $("#periodLbl").textContent = monthLabel(fMois.value);
+
+  const cards = [
+    ["CA TTC", fmt(T.caTTC), "c-bleu", "Ventes encaissées"],
+    ["CA HT", fmt(T.caHT), "c-indigo", "Base des ratios"],
+    ["Achats HT", fmt(T.achatsHT), "c-orange", "Marchandises (avoirs déduits)"],
+    ["Personnel", fmt(T.personnel), "c-violet", "Salaires + charges"],
+    ["Charges HT", fmt(T.chargesHT), "c-gris", "Frais généraux"],
+    ["Marge brute", fmt(T.marge), "c-teal", pct(T.marge/T.caHT)+" du CA HT"],
+    ["Résultat estimé", fmt(T.resultat), T.resultat>=0?"ok":"bad", pct(T.resultat/T.caHT)+" du CA HT"],
+    ["Coût matière", pct(T.coutMatiere), ratioClass(T.coutMatiere,.30,.35), "Repère ≤ 30 %"],
+    ["Masse salariale", pct(T.masseSal), ratioClass(T.masseSal,.35,.40), "Repère ≤ 35 %"],
+    ["Prime cost", pct(T.primeCost), ratioClass(T.primeCost,.65,.70), "Repère ≤ 65 %"],
+    ["TVA collectée", fmt(T.tvaCol), "c-cyan", "Sur les ventes"],
+    ["TVA déductible", fmt(T.tvaDed), "c-cyan", "Achats + charges"],
+    ["TVA à payer estimée", fmt(T.tvaPay), "c-ambre", T.tvaPay<0 ? "Crédit de TVA" : "Collectée − déductible"],
+    ["Résultat après autres", fmt(T.resultatFinal), T.resultatFinal>=0?"c-rose":"bad", "Autres : "+fmt(T.autresNet)]
+  ];
+  $("#cards").innerHTML = cards.map(([l,v,c,h]) =>
+    `<div class="card ${c}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="hint">${h}</div></div>`).join("");
+
+  $("#detail").innerHTML = TYPES.map(t => {
+    const P = T.postes[t];
+    const keys = POSTES[t].filter(p => P[p]).concat(Object.keys(P).filter(p => !POSTES[t].includes(p)));
+    const tot = {ttc:0, ht:0};
+    const body = keys.map(k => { const p=P[k]; tot.ttc+=p.ttc; tot.ht+=p.ht;
+      return `<tr><td>${esc(k)} <span class="muted">(${p.n})</span></td><td class="num p-hide">${fmt(p.ttc)}</td><td class="num">${fmt(p.ht)}</td><td class="num">${pct(p.ht/T.caHT)}</td></tr>`;
+    }).join("") || `<tr><td colspan="4" class="muted">Aucune ligne</td></tr>`;
+    return `<div class="detail-block"><h3 class="${BADGE[t]}">${t}</h3><table>
+      <thead><tr><th>Poste</th><th class="num p-hide">TTC</th><th class="num">HT</th><th class="num">% CA HT</th></tr></thead>
+      <tbody>${body}</tbody>
+      <tfoot><tr class="total"><td>Total</td><td class="num p-hide">${fmt(tot.ttc)}</td><td class="num">${fmt(tot.ht)}</td><td class="num">${pct(tot.ht/T.caHT)}</td></tr></tfoot>
+    </table></div>`;
+  }).join("");
+
+  const sorted = [...list].sort((a,b) => b.date.localeCompare(a.date) || (b.createdAt - a.createdAt));
+  $("#histCount").textContent = `(${sorted.length} ligne${sorted.length>1?"s":""})`;
+  $("#histBody").innerHTML = sorted.map(r => { const s=split(r.ttc,r.tva);
+    return `<tr><td>${frDate(r.date)}</td><td><span class="badge ${BADGE[r.type]||""}">${esc(r.type)}</span></td>
+      <td>${esc(r.poste)}</td><td>${esc(r.description)}</td><td class="num">${fmt(r.ttc)}</td><td class="num">${tvaLbl(r.tva)}</td>
+      <td class="num">${fmt(s.ht)}</td><td class="num">${fmt(s.tva)}</td>
+      <td class="no-print"><button class="btn btn-danger btn-sm" data-del="${esc(r.id)}">Supprimer</button></td></tr>`;
+  }).join("") || `<tr><td colspan="9" class="muted">Aucune ligne pour cette période.</td></tr>`;
+}
+
+/* ================== ACTIONS ================== */
+$("#histBody").addEventListener("click", e => {
+  const id = e.target.dataset.del; if(!id) return;
+  if(!confirm("Supprimer cette ligne ?")) return;
+  rows = rows.filter(r => r.id !== id); save(LS_ROWS, rows); render();
+  enqueue({action:"delete", id}); toast("Ligne supprimée");
+});
+
+$("#btnClear").addEventListener("click", () => {
+  if(!rows.length){ toast("Aucune donnée"); return; }
+  if(!confirm(`Supprimer les ${rows.length} lignes (tous les mois) ?`)) return;
+  const ok = prompt('Confirmation finale : tapez SUPPRIMER pour tout effacer.');
+  if(ok !== "SUPPRIMER"){ toast("Suppression annulée"); return; }
+  rows = []; save(LS_ROWS, rows); render();
+  enqueue({action:"clear"}); toast("Toutes les données ont été supprimées");
+});
+
+fMois.addEventListener("change", render);
+$("#btnMoisCourant").addEventListener("click", () => { fMois.value = todayStr().slice(0,7); render(); });
+$("#btnTous").addEventListener("click", () => { fMois.value = ""; render(); });
+
+$("#btnCSV").addEventListener("click", () => {
+  const m = fMois.value, list = filtered(), T = compute(list);
+  const n = v => (isFinite(v) ? v : 0).toFixed(2).replace(".",",");
+  const q = s => '"' + String(s ?? "").replace(/"/g,'""') + '"';
+  const L = [["Date","Type","Poste","Description","Montant TTC","Taux TVA","Montant HT","Montant TVA"].map(q).join(";")];
+  [...list].sort((a,b)=>a.date.localeCompare(b.date)).forEach(r => { const s=split(r.ttc,r.tva);
+    L.push([frDate(r.date), q(r.type), q(r.poste), q(r.description), n(r.ttc), String(r.tva).replace(".",","), n(s.ht), n(s.tva)].join(";"));
+  });
+  L.push("", q("Résumé")+";"+q(monthLabel(m)));
+  [["CA TTC",T.caTTC],["CA HT",T.caHT],["Total achats HT",T.achatsHT],["Total personnel",T.personnel],["Total charges HT",T.chargesHT],
+   ["Marge brute",T.marge],["Résultat estimé",T.resultat],["Autres (net)",T.autresNet],["Résultat après autres",T.resultatFinal],
+   ["TVA collectée",T.tvaCol],["TVA déductible",T.tvaDed],["TVA à payer estimée",T.tvaPay]].forEach(([l,v]) => L.push(q(l)+";"+n(v)));
+  [["Coût matière %",T.coutMatiere],["Masse salariale %",T.masseSal],["Prime cost %",T.primeCost]].forEach(([l,v]) => L.push(q(l)+";"+(isFinite(v)?n(v*100):"")));
+  const blob = new Blob(["\uFEFF"+L.join("\r\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `beirut_mon_amour_${m || "tous_les_mois"}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+});
+
+$("#btnPDF").addEventListener("click", () => {
+  document.body.classList.toggle("print-history", $("#printHist").checked);
+  $("#printDate").textContent = "· édité le " + new Date().toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"});
+  const oldTitle = document.title;
+  document.title = "Beirut_Mon_Amour_Rentabilite_" + (fMois.value || "tous_les_mois");
+  window.addEventListener("afterprint", () => { document.title = oldTitle; }, {once:true});
+  window.print();   // choisir « Enregistrer au format PDF »
+});
+
+/* ================== GOOGLE SHEETS ================== */
+let syncing = false;
+function cfgOk(){ return /^https:\/\/script\.google\.com\//.test(cfg.url || ""); }
+function saveQueue(){ save(LS_QUEUE, queue); }
+
+function setStatus(s, msg){
+  const el = $("#syncStatus");
+  const heure = new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  const map = { local:["Stockage local",""], sync:["Synchronisation…","st-sync"], ok:["Synchronisé "+heure,"st-ok"],
+                err:["Hors ligne"+(queue.length?` · ${queue.length} en attente`:""),"st-err"] };
+  el.textContent = map[s][0]; el.className = "pill no-print " + map[s][1]; el.title = msg || "";
+  $("#syncMsg").textContent = s==="err" ? "Erreur : "+msg : s==="ok" ? "Dernière synchronisation à "+heure : "";
+}
+
+async function apiGet(){
+  const res = await fetch(cfg.url + "?token=" + encodeURIComponent(cfg.token));
+  const data = await res.json(); if(!data.ok) throw new Error(data.error || "Erreur serveur");
+  return data.rows.map(normalize);
+}
+async function apiPost(payload){
+  const res = await fetch(cfg.url, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body: JSON.stringify({...payload, token:cfg.token}) });
+  const data = await res.json(); if(!data.ok) throw new Error(data.error || "Erreur serveur");
+  return data;
+}
+// Réapplique les opérations non encore envoyées sur les données reçues
+function applyQueue(list){
+  for(const op of queue){
+    if(op.action==="add" && !list.some(r=>r.id===op.row.id)) list.push(op.row);
+    else if(op.action==="delete") list = list.filter(r=>r.id!==op.id);
+    else if(op.action==="clear") list = [];
+    else if(op.action==="replace") list = op.rows.map(normalize);
+  }
+  return list;
+}
+async function syncNow(){
+  if(!cfgOk()){ setStatus("local"); return; }
+  if(syncing) return;
+  syncing = true; setStatus("sync");
+  let ok = false;
+  try{
+    while(queue.length){ await apiPost(queue[0]); queue.shift(); saveQueue(); }
+    const remote = await apiGet();
+    rows = applyQueue(remote); save(LS_ROWS, rows); render();
+    setStatus("ok"); ok = true;
+  }catch(e){ setStatus("err", e.message); }
+  finally{ syncing = false; if(ok && queue.length) setTimeout(syncNow, 300); }
+}
+function enqueue(op){ if(!cfgOk()) return; queue.push(op); saveQueue(); syncNow(); }
+
+$("#btnConnect").addEventListener("click", async () => {
+  cfg = { url: $("#cfgUrl").value.trim(), token: $("#cfgToken").value };
+  if(!cfgOk()){ alert("URL invalide : elle doit commencer par https://script.google.com/"); return; }
+  save(LS_CFG, cfg); setStatus("sync");
+  try{
+    const remote = await apiGet();
+    const ids = new Set(remote.map(r=>r.id));
+    const locales = rows.filter(r=>!ids.has(r.id));
+    if(locales.length && confirm(`${locales.length} ligne(s) locale(s) absente(s) de Google Sheets. Les envoyer ?`)){
+      locales.forEach(r => queue.push({action:"add", row:r})); saveQueue();
+    }
+    await syncNow(); toast("Connecté à Google Sheets");
+  }catch(e){ setStatus("err", e.message); alert("Connexion impossible : "+e.message); }
+});
+$("#btnSync").addEventListener("click", syncNow);
+$("#btnPush").addEventListener("click", () => {
+  if(!cfgOk()){ alert("Configurez d'abord la connexion."); return; }
+  if(!confirm(`Remplacer tout le contenu de la feuille par les ${rows.length} lignes de cet appareil ?`)) return;
+  queue = [{action:"replace", rows:[...rows]}]; saveQueue(); syncNow();
+});
+$("#btnDisconnect").addEventListener("click", () => {
+  if(!confirm("Déconnecter Google Sheets ? Les données restent dans ce navigateur.")) return;
+  cfg = {url:"", token:""}; queue = []; save(LS_CFG, cfg); saveQueue();
+  $("#cfgUrl").value = ""; $("#cfgToken").value = ""; setStatus("local");
+});
+document.addEventListener("visibilitychange", () => { if(document.visibilityState==="visible") syncNow(); });
+setInterval(() => { if(document.visibilityState==="visible") syncNow(); }, 60000);
+
+/* ================== DÉMARRAGE ================== */
+fDate.value = todayStr();
+fMois.value = todayStr().slice(0,7);
+fillPostes();
+$("#cfgUrl").value = cfg.url || ""; $("#cfgToken").value = cfg.token || "";
+render();
+syncNow();
+</script>
+</body>
+</html>
